@@ -1,0 +1,259 @@
+#include "Header.h"
+
+
+chain::chain() {
+	first = 0;
+	size = 0;
+}
+
+chain::~chain() {
+	chainNode *temp;
+	while (first) {
+		temp = first;
+		first = first->next;
+		delete temp;
+	}
+}
+
+
+bool chain::isEmpty() const {
+	if (size > 0)
+		return true;
+	else
+		return false;
+}
+
+int chain::getLength() const {
+	return size;
+}
+
+bool chain::find(int k, int &x) const {
+	if (k < 1 || k > size)
+		return false;
+	chainNode *p = get(k);
+	x = p->data;
+	return true;
+}
+
+void chain::insert(int x, int k, bool & success) {
+	success = (k >= 0 && k <= size);
+	if (!success)
+		cout << "Failure";
+	chainNode *p = new chainNode;
+	p->data = x;
+	if (k == 0) {
+		p->next = first;
+		first = p;
+	}
+	else {
+		chainNode *pre = get(k);
+		p->next = pre->next;
+		pre->next = p;
+	}
+	size++;
+
+}
+void chain::sortedInsert(int x) {
+	chainNode *current;
+	chainNode *newNode;
+	newNode = new chainNode;
+
+	newNode->data = x;
+
+	if (first == NULL || first->data >= newNode->data){
+		newNode->next = first;
+		first = newNode;
+	}
+	else {
+		current = first;
+		while (current->next != NULL && current->next->data < newNode->data) {
+			current = current->next;
+		}
+		newNode->next = current->next;
+		current->next = newNode;
+	}
+}
+
+void chain::sortedInsertNoDup(int x) {
+	chainNode *current;
+	chainNode *newNode;
+	chainNode *p;
+	newNode = new chainNode;
+	p = first;
+	bool found = false;
+
+	newNode->data = x;
+
+	while (found) {
+		if (p->data == x)
+			found = true;
+		else
+			p = p->next;
+	}
+
+	if (found == false)
+		cout << "Duplicate detected" << endl;
+	else {
+
+		if (first == NULL || first->data >= newNode->data){
+			newNode->next = first;
+			first = newNode;
+		}
+		else {
+			current = first;
+			while (current->next != NULL && current->next->data < newNode->data) {
+				current = current->next;
+			}
+			newNode->next = current->next;
+			current->next = newNode;
+		}
+	}
+}
+
+void chain::Delete(int k, int &x, bool &success) {
+	chainNode *p, *q;
+	success = (k >= 1 && k <= size);
+	if (!success)
+		cout << "Failure";
+	if (k == 1) {
+		p = first;
+		first = first->next;
+	}
+	else {
+		q = get(k - 1);
+		p = q->next;
+		q->next = p->next;
+		delete p;
+	}
+	size--;
+}
+
+void chain::printAll() {
+	chainNode *p = first;
+	while (p) {
+		cout << p->data << " ";
+		p = p->next;
+	}
+	cout << endl;
+}
+
+
+int chain::countDup(chainNode *h) {
+	chainNode *p1;
+	p1 = h;
+	//p1 = first;
+	int count = -1;
+
+	while (p1 != NULL && h != NULL){
+		if (h->data == p1->data) {
+			count++;
+			p1 = p1->next;
+		}
+		else
+			p1 = p1->next;
+	}
+	return count;
+}
+
+
+void chain::deleteLastDuplicate() {
+	chainNode *p1, *p2, *temp;
+	p1 = first;
+	int n;
+	int counter = 0;
+	while (p1) {
+		p1->checked = false;
+		p1 = p1->next;
+	}
+	p1 = first;
+
+	while (p1 != NULL && p1->next != NULL) {
+		n = countDup(p1);
+		p2 = p1;
+		counter = 0;
+		if (p1->checked == false) {
+			while (p2->next != NULL) {
+				if (p1->data == p2->next->data) {
+					counter++;
+					p1->checked = true;
+					p2->next->checked = true;
+					if (counter == n) {
+						temp = p2->next;
+						p2->next = p2->next->next;
+						delete temp;
+					}
+					else {
+						p2 = p2->next;
+					}
+				}
+				else
+					p2 = p2->next;
+			}
+		}
+		else //if it is checked already
+			p2 = p2->next;
+		p1 = p1->next;
+	}
+}
+
+void chain::deleteSecondLastDuplicate() {
+	chainNode *p1, *p2, *temp, *trail;
+	p1 = first;
+	int n;
+	int counter = 0;
+	while (p1) {
+		p1->checked = false;
+		p1 = p1->next;
+	}
+	p1 = first;
+
+	while (p1 != NULL && p1->next != NULL) {
+		n = countDup(p1);
+		p2 = p1;
+		counter = 0;
+		if (p1->checked == false) {
+			while (p2->next != NULL) {
+				if (p1->data == p2->next->data) {
+					counter++; //Found a duplicate
+					p1->checked = true;
+					p2->next->checked = true;
+					if (n == 1) {
+						// Only one duplicate, need to delete the first copy of the number
+						if (p1 == first) { //If we are deleting the first node
+							temp = first;
+							first = first->next;
+							p1 = p1->next;
+							p2 = p1;
+							delete temp;
+						}
+						else { //If it isn't the first node but still only one duplicate
+							temp = p1;
+							trail = first;
+							while (trail->next != p1) { //Get the node before the one about to be deleted to restore link
+								trail = trail->next;
+							}
+							trail->next = trail->next->next;
+							p1 = p1->next;
+							p2 = p1;
+							delete temp;
+						}
+					}
+					else if (counter == n - 1) { // Delete the one right before the last duplicate
+						temp = p2->next;
+						p2->next = p2->next->next;
+						delete temp;
+					}
+					else {
+						//add if to check if its NULL?
+						p2 = p2->next;
+					}
+				}
+				else
+					p2 = p2->next;
+			}
+		}
+		else //if it is checked already
+			p2 = p2->next;
+		p1 = p1->next;
+	}
+}
