@@ -8,5 +8,5 @@ These integers can be inserted by two methods:
 <p>
 //Insert - the integer will be put at the end of the list
 <p>
-After creating the list of integers, a fucntion can be called to delete either the last duplicate of all the
+After creating list of integers, a fucntion can be called to delete either the last duplicate of all the
 integers or the second to last duplicate of the given integers. 
